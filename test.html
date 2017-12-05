@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OpenShift Wild Wild West</title>
+    <script src="jquery-3.2.1.min.js"></script>
+</head>
+
+<body>
+<div id="result">Hello</div>
+<script type="text/javascript">
+    var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
+    var g2;
+    boom();
+    function boom() {
+        $.ajax({
+            url: backendServer.concat('/getRandomObject'),
+            success: function(results) {
+                $("#result").html(results.objectType);
+                g2 = JSON.stringify(results.objectType);
+                alert(g2);
+            }
+        });
+    }
+    alert(g2);
+</script>
+</body>
+</html>

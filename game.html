@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title>OpenShift Wild Wild West</title>
     <script src="phaser.min.js"></script>
+    <script src="jquery-3.2.1.min.js"></script>
 </head>
 
 <body>
@@ -23,13 +24,17 @@
             var game = new Phaser.Game(1024, 768, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
             var gunSight;
             var gunshot;
-            var currObject;
+            var currObject;  // This is the sprite in the game representing the current OpenShift Object
+            var currOpenShiftObject;
             var emitter;
             var index=0;
             var line='';
-            var rndObj;
             var yeehaw;
             var explosion;
+            var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
+            var gameID;
+            var objectText;
+            var scoreText;
             var content = [
                 " ",
                 "The OpenShift Evangelist Team presents",
@@ -41,24 +46,46 @@
 
             var introText;
             var locations = [
-                [306, 409],
-                [550, 420],
-                [790, 425]
+                [306, 409],  // door 1
+                [550, 420],  // door 2
+                [790, 425],  // door 3
+                [633, 122],  // top of building 3
+                [945, 287],  // building 4 balcony
+                [149, 149],  // building 1 left roof
+                [149, 140],  // building 1 right roof
+                [820, 634],  // Barrel
+                [10, 530]    // cactus
             ];
 
             var openshiftObjects = [
-                'service',
-                'pod'
+                'SERVICE',
+                'POD',
+                'BUILD',
+                'DEPLOYMENT_CONFIG',
+                'BUILD_CONFIG',
+                'PVC',
+                'ROUTE'
             ];
-            var door3x = 550;
-            var door3y = 420;
+
+            // We need to create the game on the server
+            $.ajax({
+                url: backendServer.concat('/createGame'),
+                success: function(results) {
+                    gameID = results.score.gameID;
+                }
+            });
             function preload() {
 
                 game.load.image('playfield', 'assets/gameplayfield.png');
                 game.load.image('gunsight', 'assets/gunsight.png');
                 game.load.audio('gunshot', 'assets/gunshot.wav');
-                game.load.image('service', 'assets/service.png');
-                game.load.image('pod', 'assets/pod.png');
+                game.load.image('SERVICE', 'assets/service.png');
+                game.load.image('POD', 'assets/pod.png');
+                game.load.image('BUILD', 'assets/build.png');
+                game.load.image('DEPLOYMENT_CONFIG', 'assets/deploy.png');
+                game.load.image('BUILD_CONFIG', 'assets/buildConfig.png');
+                game.load.image('PVC', 'assets/storage.png');
+                game.load.image('ROUTE', 'assets/route.png');
                 game.load.audio('yeehaw', 'assets/yeehaw.wav');
                 game.load.audio('explosion', 'assets/explosion.wav');
             }
@@ -72,8 +99,8 @@
                 game.physics.startSystem(Phaser.Physics.ARCADE);
 
                 introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-                scoreText = game.add.text(765, 10, 'Score: 000 ', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-
+                scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+                objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
                 //display the intro text
                 nextLine();
 
@@ -98,7 +125,7 @@
                         // Add the emitter for the explosion and play the yeehaw for target hit
                         explosion.play();
                         emitter = game.add.emitter(0, 0, 100);
-                        emitter.makeParticles(openshiftObjects[rndObj]);
+                        emitter.makeParticles(currOpenShiftObject.objectType);
                         emitter.gravity = 200;
 
                         //  Position the emitter where the mouse/touch event was
@@ -111,6 +138,7 @@
                         //  The final parameter (10) is how many particles will be emitted in this single burst
                         emitter.start(true, 2000, null, 10);
                         currObject.destroy();
+                        objectText.text="";
                         scoreText.text = "Score: ".concat(gameScore += 100);
                     }
                 }, this);
@@ -121,17 +149,29 @@
             function displayObject() {
                 //game.remove.sprite('service');
                 currLocation = getRandomLocation(0, locations.length-1);
-                rndObj = getRandomLocation(0, openshiftObjects.length-1);
+                getRandomOpenShiftObject();
 
-                currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], openshiftObjects[rndObj]);
+                currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currOpenShiftObject.objectType);
 
                 //delete the openshift object after it has been visible for 3 seconds.
                 game.time.events.add(Phaser.Timer.SECOND * 2, function() {
                     currObject.destroy();
+                    objectText.text = "";
                 });
                 gunSight.bringToTop();
             }
 
+            function getRandomOpenShiftObject() {
+                $.ajax({
+                    url: backendServer.concat('/getRandomObject'),
+                    async: false,
+                    success: function(results) {
+                        currOpenShiftObject = results;
+                        objectText.text = "Type: " + results.objectType + "\nName: " + results.objectName + "\nID: " + results.objectID;
+
+                    }
+                });
+            }
             function checkOverlap(spriteA, spriteB) {
                 if(typeof spriteA != 'undefined' && typeof spriteB != 'undefined') {
                     var boundsA = spriteA.getBounds();
@@ -200,7 +240,6 @@
         };
 
     </script>
-
 </body>
 
 </html>
