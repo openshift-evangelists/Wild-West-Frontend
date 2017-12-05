@@ -29,6 +29,7 @@
             var line='';
             var rndObj;
             var yeehaw;
+            var explosion;
             var content = [
                 " ",
                 "The OpenShift Evangelist Team presents",
@@ -59,7 +60,7 @@
                 game.load.image('service', 'assets/service.png');
                 game.load.image('pod', 'assets/pod.png');
                 game.load.audio('yeehaw', 'assets/yeehaw.wav');
-
+                game.load.audio('explosion', 'assets/explosion.wav');
             }
 
             function create() {
@@ -81,6 +82,8 @@
                 //Load the yeehaw
                 yeehaw = game.add.audio('yeehaw');
                 yeehaw.play();
+
+                explosion = game.add.audio('explosion');
                 // load the gun sights
                 gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
                 gunSight.anchor.set(0.5);
@@ -93,7 +96,7 @@
                     // Check if the gunsight is over the currentObject
                     if(checkOverlap(gunSight, currObject)) {
                         // Add the emitter for the explosion and play the yeehaw for target hit
-                        yeehaw.play();
+                        explosion.play();
                         emitter = game.add.emitter(0, 0, 100);
                         emitter.makeParticles(openshiftObjects[rndObj]);
                         emitter.gravity = 200;
@@ -123,7 +126,7 @@
                 currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], openshiftObjects[rndObj]);
 
                 //delete the openshift object after it has been visible for 3 seconds.
-                game.time.events.add(Phaser.Timer.SECOND * 3, function() {
+                game.time.events.add(Phaser.Timer.SECOND * 2, function() {
                     currObject.destroy();
                 });
                 gunSight.bringToTop();
@@ -182,7 +185,7 @@
                 } else {
                     introText.destroy();
                     // display a random game object every five seconds
-                    game.time.events.loop(Phaser.Timer.SECOND * 5, displayObject, this);
+                    game.time.events.loop(Phaser.Timer.SECOND * 3, displayObject, this);
                 }
 
             }
