@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OpenShift Wild Wild West</title>
+    <script src="phaser.min.js"></script>
+</head>
+
+<body>
+
+    <script type="text/javascript">
+
+        window.onload = function () {
+
+            //  Note that this html file is set to pull down Phaser 2.5.0 from the JS Delivr CDN.
+            //  Although it will work fine with this tutorial, it's almost certainly not the most current version.
+            //  Be sure to replace it with an updated version before you start experimenting with adding your own code.
+
+            var game = new Phaser.Game(1024, 768, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
+            var gunSight;
+            var gunshot;
+            var randomObject;
+
+            var locations = [
+                [550, 420],
+                [312, 409],
+                [798, 431]
+            ];
+            var door3x = 550;
+            var door3y = 420;
+            function preload() {
+
+                game.load.image('playfield', 'assets/gameplayfield.png');
+                game.load.image('gunsight', 'assets/gunsight.png');
+                game.load.audio('gunshot', 'assets/gunshot.wav');
+                game.load.image('service', 'assets/service.png')
+
+            }
+
+            function create() {
+                // load the playfield background image
+                var playfield = game.add.image(game.world.centerX, game.world.centerY, 'playfield');
+                playfield.anchor.setTo(0.5, 0.5);
+
+                //Load the gunshot audio
+                gunshot = game.add.audio('gunshot');
+                // load the gun sights
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+                gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
+                gunSight.anchor.set(0.5);
+                game.physics.arcade.enable(gunSight);
+                gunSight.inputEnabled = true;
+                gunSight.events.onInputDown.add(function () {
+                    gunshot.play();
+                }, this);
+
+                // display a random game object every five seconds
+                game.time.events.loop(Phaser.Timer.SECOND * 5, displayObject, this);
+            }
+
+            function displayObject() {
+                //game.remove.sprite('service');
+                currLocation = getRandomLocation(0, locations.length);
+                var currObject = game.add.image(locations[currLocation][0], locations[currLocation][1], 'service');
+
+                //delete the openshift object after it has been visible for 3 seconds.
+                game.time.events.add(Phaser.Timer.SECOND * 3, function() {
+                    currObject.destroy();
+                });
+                gunSight.bringToTop();
+            }
+
+            function getRandomLocation(min,max){
+                return Math.floor(Math.random()*(max-min+1)+min);
+            }
+            function update() {
+
+                //  If the gunsight is > 8px away from the pointer then let's move to it
+                if (game.physics.arcade.distanceToPointer(gunSight, game.input.activePointer) > 8) {
+                    //  Make the object seek to the active pointer (mouse or touch).
+                    game.physics.arcade.moveToPointer(gunSight, 300, game.input.activePointer, 100);
+                }
+                else {
+                    //  Otherwise turn off velocity because we're close enough to the pointer
+                    gunSight.body.velocity.set(0);
+                }
+
+            }
+
+            function render() {
+
+                game.debug.inputInfo(32, 32);
+
+            }
+        };
+
+    </script>
+
+</body>
+
+</html>
