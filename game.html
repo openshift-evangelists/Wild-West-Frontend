@@ -19,9 +19,7 @@
             //**  Author: Grant Shipley @gshipley
             //**  Shootem-up game to teach what openshift resources can killed
             //*******************************************************************
-
-
-            var game = new Phaser.Game(1024, 768, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
+            var game;
             var gunSight;
             var gunshot;
             var currObject;  // This is the sprite in the game representing the current OpenShift Object
@@ -31,20 +29,18 @@
             var line='';
             var yeehaw;
             var explosion;
-            var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
             var gameID;
             var objectText;
             var scoreText;
+            var introText;
+            var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
+            var gameScore = 0;
             var content = [
                 " ",
                 "The OpenShift Evangelist Team presents",
                 " ",
                 "OpenShift, the Wild Wild West way"
             ];
-
-            var gameScore = 0;
-
-            var introText;
             var locations = [
                 [306, 409],  // door 1
                 [550, 420],  // door 2
@@ -70,10 +66,15 @@
             // We need to create the game on the server
             $.ajax({
                 url: backendServer.concat('/createGame'),
+                async: false,
                 success: function(results) {
                     gameID = results.score.gameID;
+
+                    // Now that we have a gameID from the server, we can start the game
+                    game = new Phaser.Game(1024, 768, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
                 }
             });
+
             function preload() {
 
                 game.load.image('playfield', 'assets/gameplayfield.png');
@@ -101,8 +102,9 @@
                 introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
                 scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
                 objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-                //display the intro text
-                nextLine();
+
+                //display the intro text with a call back to the event loop to start the game
+                displayIntroText();
 
                 //Load the gunshot audio
                 gunshot = game.add.audio('gunshot');
@@ -209,12 +211,12 @@
                 else
                 {
                     //  Wait 2 seconds then start a new line
-                    game.time.events.add(Phaser.Timer.SECOND * 1, nextLine, this);
+                    game.time.events.add(Phaser.Timer.SECOND * 1, displayIntroText, this);
                 }
 
             }
 
-            function nextLine() {
+            function displayIntroText() {
 
                 index++;
 
