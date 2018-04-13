@@ -1,0 +1,293 @@
+<!doctype html>
+<title>OpenShift, Wild Wild West</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+    }
+    #main {
+        display: flex;
+        min-height: calc(100vh - 40vh);
+    }
+    #main > article {
+        background: white;
+    }
+    #main > nav,
+    #main > aside {
+        flex: auto;
+        background: white;
+    }
+    #main > nav {
+        order: -1;
+    }
+    header, footer, article, nav, aside {
+        padding: 1em;
+    }
+    footer {
+        background: white;
+        height: 10vh;
+    }
+    header {
+        background: white;
+        height: 10vh;
+    }
+</style>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OpenShift Wild Wild West</title>
+    <script src="node_modules/phaser/build/phaser.min.js"></script>
+    <script src="jquery-3.2.1.min.js"></script>
+</head>
+
+<body>
+<body>
+<header><center><img src="/assets/openshiftlogo.png" alt="OpenShift" align="center"></center> </header>
+<div id="main">
+    <article>
+        <div id="openshiftgame"></div>
+
+    <script type="text/javascript">
+
+        window.onload = function () {
+
+            //*******************************************************************
+            //**  OpenShift, Wild Wild West Shooter
+            //**  Author: Grant Shipley @gshipley
+            //**  Shootem-up game to teach what openshift resources can killed
+            //*******************************************************************
+            var game;
+            var gunSight;
+            var gunshot;
+            var currObject;  // This is the sprite in the game representing the current OpenShift Object
+            var currOpenShiftObject;
+            var emitter;
+            var index=0;
+            var line='';
+            var yeehaw;
+            var explosion;
+            var gameID;
+            var objectText;
+            var scoreText;
+            var introText;
+            var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
+            var gameScore = 0;
+            var content = [
+                " ",
+                "The OpenShift Evangelist Team presents",
+                " ",
+                "OpenShift, the Wild Wild West way"
+            ];
+            var locations = [
+                [306, 409],  // door 1
+                [550, 420],  // door 2
+                [790, 425],  // door 3
+                [633, 122],  // top of building 3
+                [945, 287],  // building 4 balcony
+                [149, 149],  // building 1 left roof
+                [149, 140],  // building 1 right roof
+                [820, 634],  // Barrel
+                [10, 530]    // cactus
+            ];
+
+            var openshiftObjects = [
+                'SERVICE',
+                'POD',
+                'BUILD',
+                'DEPLOYMENT_CONFIG',
+                'BUILD_CONFIG',
+                'PVC',
+                'ROUTE'
+            ];
+
+            // We need to create the game on the server
+            $.ajax({
+                url: backendServer.concat('/createGame'),
+                async: false,
+                success: function(results) {
+                    gameID = results.score.gameID;
+
+                    // Now that we have a gameID from the server, we can start the game
+                    game = new Phaser.Game(1024, 768, Phaser.AUTO, 'openshiftgame', { preload: preload, create: create, update: update, render: render });
+                }
+            });
+
+            function preload() {
+
+                game.load.image('playfield', 'assets/gameplayfield.png');
+                game.load.image('gunsight', 'assets/gunsight.png');
+                game.load.audio('gunshot', 'assets/gunshot.wav');
+                game.load.image('SERVICE', 'assets/service.png');
+                game.load.image('POD', 'assets/pod.png');
+                game.load.image('BUILD', 'assets/build.png');
+                game.load.image('DEPLOYMENT_CONFIG', 'assets/deploy.png');
+                game.load.image('BUILD_CONFIG', 'assets/buildConfig.png');
+                game.load.image('PVC', 'assets/storage.png');
+                game.load.image('ROUTE', 'assets/route.png');
+                game.load.audio('yeehaw', 'assets/yeehaw.wav');
+                game.load.audio('explosion', 'assets/explosion.wav');
+            }
+
+            function create() {
+                // load the playfield background image
+                var playfield = game.add.image(game.world.centerX, game.world.centerY, 'playfield');
+                playfield.anchor.setTo(0.5, 0.5);
+
+                // Start the physics system for the gunsight and explosion
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+
+                introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+                scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+                objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+
+                //display the intro text with a call back to the event loop to start the game
+                displayIntroText();
+
+                //Load the gunshot audio
+                gunshot = game.add.audio('gunshot');
+                //Load the yeehaw
+                yeehaw = game.add.audio('yeehaw');
+                yeehaw.play();
+
+                explosion = game.add.audio('explosion');
+                // load the gun sights
+                gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
+                gunSight.anchor.set(0.5);
+                game.physics.arcade.enable(gunSight);
+                gunSight.inputEnabled = true;
+
+                // If the player fired their weapon
+                gunSight.events.onInputDown.add(function () {
+                    gunshot.play();
+                    // Check if the gunsight is over the currentObject
+                    if(checkOverlap(gunSight, currObject)) {
+                        // Add the emitter for the explosion and play the yeehaw for target hit
+                        explosion.play();
+                        emitter = game.add.emitter(0, 0, 100);
+                        emitter.makeParticles(currOpenShiftObject.objectType);
+                        emitter.gravity = 200;
+
+                        //  Position the emitter where the mouse/touch event was
+                        emitter.x = locations[currLocation][0];
+                        emitter.y = locations[currLocation][1];
+
+                        //  The first parameter sets the effect to "explode" which means all particles are emitted at once
+                        //  The second gives each particle a 2000ms lifespan
+                        //  The third is ignored when using burst/explode mode
+                        //  The final parameter (10) is how many particles will be emitted in this single burst
+                        emitter.start(true, 2000, null, 10);
+                        currObject.destroy();
+                        objectText.text="";
+                        scoreText.text = "Score: ".concat(gameScore += 100);
+                    }
+                }, this);
+
+            }
+
+
+            function displayObject() {
+                //game.remove.sprite('service');
+                currLocation = getRandomLocation(0, locations.length-1);
+                getRandomOpenShiftObject();
+
+                currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currOpenShiftObject.objectType);
+
+                //delete the openshift object after it has been visible for 3 seconds.
+                game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+                    currObject.destroy();
+                    objectText.text = "";
+                });
+                gunSight.bringToTop();
+            }
+
+            function getRandomOpenShiftObject() {
+                $.ajax({
+                    url: backendServer.concat('/getRandomObject'),
+                    async: false,
+                    success: function(results) {
+                        currOpenShiftObject = results;
+                        objectText.text = "Type: " + results.objectType + "\nName: " + results.objectName + "\nID: " + results.objectID;
+
+                    }
+                });
+            }
+            function checkOverlap(spriteA, spriteB) {
+                if(typeof spriteA != 'undefined' && typeof spriteB != 'undefined') {
+                    var boundsA = spriteA.getBounds();
+                    var boundsB = spriteB.getBounds();
+
+                    return Phaser.Rectangle.intersects(boundsA, boundsB);
+                }
+
+            }
+
+            function getRandomLocation(min,max){
+                return Math.floor(Math.random()*(max-min+1)+min);
+            }
+            function update() {
+
+                //  If the gunsight is > 8px away from the pointer then let's move to it
+                if (game.physics.arcade.distanceToPointer(gunSight, game.input.activePointer) > 8) {
+                    //  Make the object seek to the active pointer (mouse or touch).
+                    game.physics.arcade.moveToPointer(gunSight, 300, game.input.activePointer, 100);
+                }
+                else {
+                    //  Otherwise turn off velocity because we're close enough to the pointer
+                    gunSight.body.velocity.set(0);
+                }
+            }
+
+            function updateLine() {
+
+                if (line.length < content[index].length)
+                {
+                    line = content[index].substr(0, line.length + 1);
+                    // text.text = line;
+                    introText.setText(line);
+                }
+                else
+                {
+                    //  Wait 2 seconds then start a new line
+                    game.time.events.add(Phaser.Timer.SECOND * 1, displayIntroText, this);
+                }
+
+            }
+
+            function displayIntroText() {
+
+                index++;
+
+                if (index < content.length)
+                {
+                    line = '';
+                    game.time.events.repeat(80, content[index].length + 1, updateLine, this);
+                } else {
+                    introText.destroy();
+                    // display a random game object every five seconds
+                    game.time.events.loop(Phaser.Timer.SECOND * 3, displayObject, this);
+                }
+
+            }
+
+            function render() {
+                // If you are working / modifying this code base,
+                // uncomment the following line to display helpful information
+                // in the top left corner
+
+                // game.debug.inputInfo(32, 32);
+            }
+        };
+
+    </script>
+    </article>
+    <nav>This should be the legend</nav>
+    <aside>Aside</aside>
+</div>
+<footer>Footer</footer>
+
+</body>
+
+</html>
