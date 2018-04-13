@@ -1,27 +1,28 @@
 {
-    "name": "WildWildWest",
-    "version": "1.0.0",
-    "description": "OpenShift, The Wild Wild West",
-    "main": "server.js",
-    "scripts": {
+  "name": "WildWildWest",
+  "version": "1.0.0",
+  "description": "OpenShift, The Wild Wild West",
+  "main": "server.js",
+  "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
+  },
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/openshift-evangelists/Wild-West-Frontend.git"
-    },
-    "author": "@gshipley",
-    "license": "MIT",
-    "bugs": {
+  },
+  "author": "@gshipley",
+  "license": "MIT",
+  "bugs": {
     "url": "https://github.com/openshift-evangelists/Wild-West-Frontend.git/issues"
-    },
-    "homepage": "https://github.com/openshift-evangelists/Wild-West-Frontend.git#readme",
-    "dependencies": {
+  },
+  "homepage": "https://github.com/openshift-evangelists/Wild-West-Frontend.git#readme",
+  "dependencies": {
     "config-multipaas": "^0.2.2",
+    "jquery": "^3.3.1",
     "phaser": "^2.6.2",
     "routes-router": "^4.3.0",
     "send-data": "^8.0.0",
     "st": "^1.2.2"
-    }
-    }
+  }
+}
