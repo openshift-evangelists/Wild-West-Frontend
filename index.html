@@ -48,7 +48,7 @@
 <header><center><img src="/assets/openshiftlogo.png" alt="OpenShift" align="center"></center> </header>
 <div id="main">
     <article>
-        <div id="openshiftgame"></div>v
+        <div id="openshiftgame"></div>
 
     <script type="text/javascript">
 
@@ -73,7 +73,7 @@
             var objectText;
             var scoreText;
             var introText;
-            var backendServer = 'http://kwww-backend-kwww.b9ad.pro-us-east-1.openshiftapps.com';
+            var backendServer = 'http://wildwestjava-wildwest.b9ad.pro-us-east-1.openshiftapps.com';
             var gameScore = 0;
             var content = [
                 " ",
@@ -143,6 +143,7 @@
                 scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
                 objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
 
+                
                 //display the intro text with a call back to the event loop to start the game
                 displayIntroText();
 
@@ -179,7 +180,10 @@
                         //  The third is ignored when using burst/explode mode
                         //  The final parameter (10) is how many particles will be emitted in this single burst
                         emitter.start(true, 2000, null, 10);
+                        // delete the object on the game server
+                        //deletePlatformObject(currOpenShiftObject);
                         currObject.destroy();
+
                         objectText.text="";
                         scoreText.text = "Score: ".concat(gameScore += 100);
                     } else {
@@ -216,6 +220,15 @@
 
                     }
                 });
+            }
+
+            function deletePlatformObject() {
+                $.ajax({
+                    url: backendServer.concat('/deleteObject'),
+                    async: false,
+                    type: 'GET',
+                    data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID }
+                })
             }
             function checkOverlap(spriteA, spriteB) {
                 if(typeof spriteA != 'undefined' && typeof spriteB != 'undefined') {
