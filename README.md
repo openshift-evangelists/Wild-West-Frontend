@@ -7,7 +7,6 @@ OpenShift, the Wild Wild West Way is a game created with two components:
 
 For those not familar with OpenShift, it is an enterprise distribution of Kubernetes and is an open source project by the folks at Red Hat.
 
-
 **How to play**
 
 This game queries the backend service (SpringBoot) every couple of seconds to get a list of all the Platform objects you have in your project.  It then selects one at random and displays in on the screen.  The goal of the game is to shoot the objects that can be safetly destroyed that the platform can recover from.  Be careful though, if you shoot / destroy an object that can't be automatically recreated (route for example), your game will be over.
@@ -25,7 +24,6 @@ All of this is happening in real on the server (if configured).  If you shoot a 
 * Routes
 
 *Others* A pull request away :)
-
 
 **Current Vanilla Kubernetes Objects Supported**
 

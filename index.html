@@ -144,16 +144,18 @@
                 objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
 
                 
-                //display the intro text with a call back to the event loop to start the game
+                //display the intro text
                 displayIntroText();
 
-                //Load the gunshot audio
+                // Load the gunshot audio
                 gunshot = game.add.audio('gunshot');
-                //Load the yeehaw
+                // Load the yeehaw
                 yeehaw = game.add.audio('yeehaw');
+                // Play the intro sound
                 yeehaw.play();
 
                 explosion = game.add.audio('explosion');
+                
                 // load the gun sights
                 gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
                 gunSight.anchor.set(0.5);
@@ -165,6 +167,9 @@
                     gunshot.play();
                     // Check if the gunsight is over the currentObject
                     if(checkOverlap(gunSight, currObject)) {
+                        // delete the object on the game server
+                        //deletePlatformObject(currOpenShiftObject);
+                        
                         // Add the emitter for the explosion and play the yeehaw for target hit
                         explosion.play();
                         emitter = game.add.emitter(0, 0, 100);
@@ -180,8 +185,7 @@
                         //  The third is ignored when using burst/explode mode
                         //  The final parameter (10) is how many particles will be emitted in this single burst
                         emitter.start(true, 2000, null, 10);
-                        // delete the object on the game server
-                        //deletePlatformObject(currOpenShiftObject);
+
                         currObject.destroy();
 
                         objectText.text="";
@@ -243,6 +247,7 @@
             function getRandomLocation(min,max){
                 return Math.floor(Math.random()*(max-min+1)+min);
             }
+
             function update() {
 
                 //  If the gunsight is > 8px away from the pointer then let's move to it
@@ -282,7 +287,7 @@
                     game.time.events.repeat(80, content[index].length + 1, updateLine, this);
                 } else {
                     introText.destroy();
-                    // display a random game object every five seconds
+                    // display a random game object every three seconds
                     game.time.events.loop(Phaser.Timer.SECOND * 3, displayObject, this);
                 }
 
