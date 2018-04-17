@@ -65,6 +65,7 @@
             var currObject;  // This is the sprite in the game representing the current OpenShift Object
             var currOpenShiftObject;
             var emitter;
+            var gameLoop;
             var index=0;
             var line='';
             var yeehaw;
@@ -168,8 +169,9 @@
                     // Check if the gunsight is over the currentObject
                     if(checkOverlap(gunSight, currObject)) {
                         // delete the object on the game server
-                        //deletePlatformObject(currOpenShiftObject);
-                        
+                        stopGameDisplayLoop();
+                        deletePlatformObject(currOpenShiftObject);
+
                         // Add the emitter for the explosion and play the yeehaw for target hit
                         explosion.play();
                         emitter = game.add.emitter(0, 0, 100);
@@ -231,7 +233,13 @@
                     url: backendServer.concat('/deleteObject'),
                     async: false,
                     type: 'GET',
-                    data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID }
+                    data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID },
+                    success: function() {
+                        startGameDisplayLoop();
+                    },
+                    error: function() {
+                        startGameDisplayLoop();
+                    }
                 })
             }
             function checkOverlap(spriteA, spriteB) {
@@ -287,10 +295,17 @@
                     game.time.events.repeat(80, content[index].length + 1, updateLine, this);
                 } else {
                     introText.destroy();
-                    // display a random game object every three seconds
-                    game.time.events.loop(Phaser.Timer.SECOND * 3, displayObject, this);
+                    startGameDisplayLoop();
                 }
 
+            }
+
+            function startGameDisplayLoop() {
+                gameLoop = game.time.events.loop(Phaser.Timer.SECOND * 3, displayObject, this);
+            }
+
+            function stopGameDisplayLoop() {
+                game.time.events.remove(gameLoop);
             }
 
             function render() {
