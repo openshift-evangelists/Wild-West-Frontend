@@ -28,3 +28,21 @@ All of this is happening in real on the server (if configured).  If you shoot a 
 **Current Vanilla Kubernetes Objects Supported**
 
 *coming soon*
+
+### Development
+
+Setup:
+```bash
+npm install
+```
+
+Run (with inline BACKEND_SERVICE configuration):
+
+```bash
+BACKEND_SERVICE=http://my-backend-host-url.com npm start
+```
+
+Configuration of Backend Service host url via Env Var:
+```bash
+export BACKEND_SERVICE="http://my-backend-host-url.com"
+```
