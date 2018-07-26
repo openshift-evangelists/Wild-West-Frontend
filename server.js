@@ -9,20 +9,31 @@ var cc       = require('config-multipaas'),
 
 var config   = cc()
 var app      = Router()
+var backend_host = process.env.BACKEND_SERVICE || "http://wildwestjava-wildwest.b9ad.pro-us-east-1.openshiftapps.com"
+var game_js = fs.readFileSync(__dirname + '/assets/game.js');
+var game_js_response = game_js.toString().replace('BACKEND_SERVICE', backend_host);
 
 // Routes
 app.addRoute("/status", function (req, res, opts, cb) {
   sendJson(req, res, "{status: 'ok'}")
 })
 
-app.addRoute("/", function (req, res, opts, cb) {
-  var data = fs.readFileSync(__dirname + '/index.html');
+app.addRoute("/assets/game.js", function (req, res, opts, cb) {
   sendHtml(req, res, {
-    body: data.toString(),
+    body: game_js_response,
     statusCode: 200,
     headers: {}
   })
-})
+});
+
+app.addRoute("/", function (req, res, opts, cb) {
+  var index_html = fs.readFileSync(__dirname + '/index.html');
+  sendHtml(req, res, {
+    body: index_html.toString().replace('BACKEND_SERVICE', backend_host),
+    statusCode: 200,
+    headers: {}
+  })
+});
 
 app.addRoute("/hostname", function (req, res, opts, cb) {
   var data = "<p>Hostname: " + config.get('HOSTNAME') + "</p>";
