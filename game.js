@@ -1,5 +1,3 @@
-//window.onload = function () {
-
     //*******************************************************************
     //**  OpenShift, Wild Wild West Shooter
     //**  Author: Grant Shipley @gshipley
@@ -176,7 +174,6 @@
         frameObject.inputEnabled = true;
 
         killFrameText = game.add.text(330, 270, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-        console.log(killFrameHelp[currOpenShiftObject.objectType]);
         killFrameText.setText(killFrameHelp[currOpenShiftObject.objectType]);
 
         frameObject.events.onInputDown.add(function() {
@@ -308,6 +305,5 @@
         // uncomment the following line to display helpful information
         // in the top left corner
 
-        game.debug.inputInfo(32, 32);
+        // game.debug.inputInfo(32, 32);
     }
-//};
