@@ -19,6 +19,7 @@
     var explosion;
     var gameID;
     var objectText;
+    var killFrameText;
     var scoreText;
     var introText;
     // Value populated in server.js:12 via the `BACKEND_SERVICE` environment variable
@@ -52,6 +53,15 @@
         'PVC',
         'ROUTE'
     ];
+
+    var killFrameHelp = {};
+    killFrameHelp['POD'] =  'You killed a\nPOD\n\nThis is okay because openshift\nwill recover gracefully.';
+    killFrameHelp['ROUTE'] = 'You killed a\nROUTE\n\nThis removes the URL and\nis not automatically\nrecovered';
+    killFrameHelp['SERVICE'] = 'You killed a\nSERVICE\n\n';
+    killFrameHelp['BUILD'] = 'You killed a\nBUILD\n\n';
+    killFrameHelp['DEPLOYMENT_CONFIG'] = 'You killed a\nDEPLOYMENT CONFIG\n\n';
+    killFrameHelp['BUILD_CONFIG'] = 'You killed a\nBUILD_CONFIG\n\n';
+    killFrameHelp['PVC'] = 'You killed a\nPERSISTENT VOLUME';
 
     // We need to create the game on the server
     $.ajax({
@@ -164,8 +174,14 @@
     function displayKillFrame() {
         frameObject = game.add.sprite(220, 153, 'killframe');
         frameObject.inputEnabled = true;
+
+        killFrameText = game.add.text(330, 270, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+        console.log(killFrameHelp[currOpenShiftObject.objectType]);
+        killFrameText.setText(killFrameHelp[currOpenShiftObject.objectType]);
+
         frameObject.events.onInputDown.add(function() {
             frameObject.destroy();
+            killFrameText.destroy();
             startGameDisplayLoop();
         }, this);
     }
