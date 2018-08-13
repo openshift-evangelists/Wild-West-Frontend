@@ -1,9 +1,9 @@
-window.onload = function () {
+//window.onload = function () {
 
     //*******************************************************************
     //**  OpenShift, Wild Wild West Shooter
     //**  Author: Grant Shipley @gshipley
-    //**  Shootem-up game to teach what openshift resources can killed
+    //**  Shootem-up game to teach what openshift resources can be killed
     //*******************************************************************
     var game;
     var gunSight;
@@ -13,6 +13,7 @@ window.onload = function () {
     var emitter;
     var gameLoop;
     var index=0;
+    var frameObject;
     var line='';
     var yeehaw;
     var explosion;
@@ -23,6 +24,7 @@ window.onload = function () {
     // Value populated in server.js:12 via the `BACKEND_SERVICE` environment variable
     var backendServer = 'BACKEND_SERVICE';
     var gameScore = 0;
+    var noviceMode = true;
     var content = [
         " ",
         "The OpenShift Evangelist Team presents",
@@ -77,6 +79,7 @@ window.onload = function () {
         game.load.image('ROUTE', 'assets/route.png');
         game.load.audio('yeehaw', 'assets/yeehaw.wav');
         game.load.audio('explosion', 'assets/explosion.wav');
+        game.load.image('killframe', 'assets/frame.png');
     }
 
     function create() {
@@ -89,9 +92,9 @@ window.onload = function () {
 
         introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
         scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+
         objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
 
-        
         //display the intro text
         displayIntroText();
 
@@ -102,7 +105,9 @@ window.onload = function () {
         // Play the intro sound
         yeehaw.play();
 
+        // Set the explosion sound
         explosion = game.add.audio('explosion');
+
         
         // load the gun sights
         gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
@@ -114,6 +119,7 @@ window.onload = function () {
         gunSight.events.onInputDown.add(function () {
             gunshot.play();
             // Check if the gunsight is over the currentObject
+            
             if(checkOverlap(gunSight, currObject)) {
                 // delete the object on the game server
                 stopGameDisplayLoop();
@@ -147,12 +153,32 @@ window.onload = function () {
 
     }
 
+    function toggleHelpButton() {
+        if (noviceMode == false) {
+            noviceMode = true;
+        } else {
+            noviceMode = false;
+        }
+    }
+
+    function displayKillFrame() {
+        frameObject = game.add.sprite(220, 153, 'killframe');
+        frameObject.inputEnabled = true;
+        frameObject.events.onInputDown.add(function() {
+            frameObject.destroy();
+            startGameDisplayLoop();
+        }, this);
+    }
 
     function displayObject() {
-        //game.remove.sprite('service');
+
+        // Get a random location from the location array as defined in the locations array
         currLocation = getRandomLocation(0, locations.length-1);
+
+        // Get a random object from the kubernetes or openshift API
         getRandomOpenShiftObject();
 
+        // Add the object to the playfiend using the random location
         currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currOpenShiftObject.objectType);
 
         //delete the openshift object after it has been visible for 3 seconds.
@@ -163,6 +189,7 @@ window.onload = function () {
         gunSight.bringToTop();
     }
 
+    
     function getRandomOpenShiftObject() {
         $.ajax({
             url: backendServer.concat('/getRandomObject'),
@@ -182,7 +209,12 @@ window.onload = function () {
             type: 'GET',
             data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID },
             success: function() {
-                startGameDisplayLoop();
+                if(noviceMode == false) {
+                    startGameDisplayLoop();
+                } else {
+                    displayKillFrame(currOpenShiftObject);
+
+                }
             },
             error: function() {
                 startGameDisplayLoop();
@@ -260,6 +292,6 @@ window.onload = function () {
         // uncomment the following line to display helpful information
         // in the top left corner
 
-        // game.debug.inputInfo(32, 32);
+        game.debug.inputInfo(32, 32);
     }
-};
+//};

@@ -11,7 +11,7 @@ var config   = cc()
 var app      = Router()
 
 // Configure the BACKEND_SERVICE host address via environment variables:
-var backend_host = process.env.BACKEND_SERVICE || "http://backend-wildwestapp-wildwest.b9ad.pro-us-east-1.openshiftapps.com"
+var backend_host = process.env.BACKEND_SERVICE || "http://backend-wildwestapp-wildwest.b9ad.pro-us-east-1.openshiftapps.com";
 var game_js = fs.readFileSync(__dirname + '/game.js');
 var game_js_response = game_js.toString().replace("'BACKEND_SERVICE'", '"'+backend_host+'"');
 
