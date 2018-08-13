@@ -20,7 +20,8 @@ window.onload = function () {
     var objectText;
     var scoreText;
     var introText;
-    var backendServer = 'http://wildwestjava-wildwest.b9ad.pro-us-east-1.openshiftapps.com';
+    // Value populated in server.js:12 via the `BACKEND_SERVICE` environment variable
+    var backendServer = 'BACKEND_SERVICE';
     var gameScore = 0;
     var content = [
         " ",
