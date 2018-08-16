@@ -1,3 +1,6 @@
+# Wild West (frontend)
+[![Dependency Check](http://img.shields.io/david/openshift-evangelists/Wild-West-Frontend.svg)](https://david-dm.org/openshift-evangelists/Wild-West-Frontend)
+
 OpenShift, the Wild Wild West Way is a game created with two components:
 
 * Node front end that uses the open source Phaser javascript game engine.
@@ -40,13 +43,13 @@ npm install
 Run (with inline BACKEND_SERVICE configuration):
 
 ```bash
-BACKEND_SERVICE=http://my-backend-host-url.com npm start
+BACKEND_SERVICE=my-backend-host-url.com npm start
 ```
 
 Configuration of Backend Service host url via Env Var:
 
 ```bash
-export BACKEND_SERVICE="http://my-backend-host-url.com"
+export BACKEND_SERVICE="my-backend-host-url.com"
 ```
 
 On your OpenShift cluster, for the backend to have access to the API, you need to give permission to the service account:

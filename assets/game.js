@@ -20,8 +20,6 @@
     var killFrameText;
     var scoreText;
     var introText;
-    // Value populated in server.js:12 via the `BACKEND_SERVICE` environment variable
-    var backendServer = 'BACKEND_SERVICE';
     var gameScore = 0;
     var noviceMode = true;
     var content = [
@@ -41,7 +39,7 @@
         [860, 634],  // Barrel
         [30, 530]    // cactus
     ];
-
+    var backend_path = window.backend_path || '/ws';
     var openshiftObjects = [
         'SERVICE',
         'POD',
@@ -63,7 +61,7 @@
 
     // We need to create the game on the server
     $.ajax({
-        url: backendServer.concat('/createGame'),
+        url: backend_path+'/createGame',
         async: false,
         success: function(results) {
             gameID = results.score.gameID;
@@ -205,7 +203,7 @@
     
     function getRandomOpenShiftObject() {
         $.ajax({
-            url: backendServer.concat('/getRandomObject'),
+            url: backend_path+'/getRandomObject',
             async: false,
             success: function(results) {
                 currOpenShiftObject = results;
@@ -217,7 +215,7 @@
 
     function deletePlatformObject() {
         $.ajax({
-            url: backendServer.concat('/deleteObject'),
+            url: backend_path+'/deleteObject',
             async: false,
             type: 'GET',
             data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID },
