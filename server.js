@@ -50,11 +50,11 @@ app.addRoute(url_prefix +"/hostname", function (req, res, opts, cb) {
 // Serve static assets prefixed with '/assets', or '/node_modules'
 var static_folders=['assets','node_modules'];
 for(var folder in static_folders){
-  app.addRoute(url_prefix + "/"+static_folders[folder]+"/*", st({
-    path: static_folders[folder], url: static_folders[folder]
+  app.addRoute(url_prefix+"/"+static_folders[folder]+"/*", st({
+    path: static_folders[folder], url: url_prefix+"/"+static_folders[folder]
   }))
 }
 
 var server = http.createServer(app)
 server.listen(config.get('PORT'), config.get('IP'), function () {
-  console.log( "Listening on " + config.get('IP') + ", port " + config.get('PORT') + "with a URL_PREFIX of " + url_prefix )});
+  console.log( "Listening on " + config.get('IP') + ", port " + config.get('PORT') + " with a URL_PREFIX of " + url_prefix )});
