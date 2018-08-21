@@ -50,7 +50,7 @@ app.addRoute(url_prefix +"/hostname", function (req, res, opts, cb) {
 // Serve static assets prefixed with '/assets', or '/node_modules'
 var static_folders=['assets','node_modules'];
 for(var folder in static_folders){
-  app.addRoute( "/"+static_folders[folder]+"/*", st({
+  app.addRoute(url_prefix + "/"+static_folders[folder]+"/*", st({
     path: static_folders[folder], url: static_folders[folder]
   }))
 }
