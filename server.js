@@ -55,6 +55,12 @@ for(var folder in static_folders){
   }))
 }
 
+for(var folder in static_folders){
+  app.addRoute("/"+static_folders[folder]+"/*", st({
+    path: static_folders[folder], url: static_folders[folder]
+  }))
+}
+
 var server = http.createServer(app)
 server.listen(config.get('PORT'), config.get('IP'), function () {
   console.log( "Listening on " + config.get('IP') + ", port " + config.get('PORT') + "with a URL_PREFIX of " + url_prefix )});
