@@ -57,5 +57,4 @@ for(var folder in static_folders){
 
 var server = http.createServer(app)
 server.listen(config.get('PORT'), config.get('IP'), function () {
-  console.log( "Listening on " + config.get('IP') + ", port " + config.get('PORT') + "with a URL_PREFIX of" + url_prefix )
-});
+  console.log( "Listening on " + config.get('IP') + ", port " + config.get('PORT') + "with a URL_PREFIX of " + url_prefix )});
