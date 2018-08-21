@@ -11,16 +11,17 @@ var config   = cc()
 var app      = Router()
 
 // Configure the BACKEND_SERVICE host address via environment variables:
-var backend_host = process.env.BACKEND_SERVICE || "http://backend-wildwestapp-wildwest.b9ad.pro-us-east-1.openshiftapps.com";
+var backend_host = process.env.BACKEND_SERVICE || "http://wildfly-app-wwtest.b9ad.pro-us-east-1.openshiftapps.com";
+var url_prefix = process.env.URL_PREFIX || ""
 var game_js = fs.readFileSync(__dirname + '/game.js');
 var game_js_response = game_js.toString().replace("'BACKEND_SERVICE'", '"'+backend_host+'"');
 
 // Routes
-app.addRoute("/status", function (req, res, opts, cb) {
+app.addRoute(url_prefix + "/status", function (req, res, opts, cb) {
   sendJson(req, res, "{status: 'ok'}")
 })
 
-app.addRoute("/assets/game.js", function (req, res, opts, cb) {
+app.addRoute(url_prefix + "/assets/game.js", function (req, res, opts, cb) {
   sendHtml(req, res, {
     body: game_js_response,
     statusCode: 200,
@@ -28,7 +29,7 @@ app.addRoute("/assets/game.js", function (req, res, opts, cb) {
   })
 });
 
-app.addRoute("/", function (req, res, opts, cb) {
+app.addRoute(url_prefix + "/", function (req, res, opts, cb) {
   var index_html = fs.readFileSync(__dirname + '/index.html');
   sendHtml(req, res, {
     body: index_html.toString().replace('BACKEND_SERVICE', backend_host),
@@ -37,7 +38,7 @@ app.addRoute("/", function (req, res, opts, cb) {
   })
 });
 
-app.addRoute("/hostname", function (req, res, opts, cb) {
+app.addRoute(url_prefix +"/hostname", function (req, res, opts, cb) {
   var data = "<p>Hostname: " + config.get('HOSTNAME') + "</p>";
   sendHtml(req, res, {
     body: data,
