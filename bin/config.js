@@ -19,17 +19,30 @@ var findComponents = function(env){
 var autoconfig  = function (config_overrides){
   var backend_component= undefined,
       backend_component_url= undefined,
+      backend_component_name= process.env.BACKEND_COMPONENT_NAME,
       backend_path = process.env.BACKEND_PATH || "/ws",
       no_slash_frontend = undefined,
       frontend_path = process.env.URL_PREFIX || "/",
       components = findComponents();
 
-  if( frontend_path.length > 1 ){
-    //If we have a custom frontend path, and it's missing a trailing slash:
-    if( frontend_path.substring(frontend_path.length - 1) !== "/") {
-      frontend_path += "/";
+  //Normalize path inputs
+  if( process.env.URL_PREFIX ){
+    if( frontend_path !== '/' ){
+      //The frontend path must end with a slash
+      if( frontend_path.substring(frontend_path.length - 1) !== "/") {
+        frontend_path += "/";
+      }
+      no_slash_frontend = frontend_path.slice(0,frontend_path.length-1);
     }
-    no_slash_frontend = frontend_path.slice(0,frontend_path.length-1);
+    if( !process.env.BACKEND_PATH ){
+      backend_path = process.env.URL_PREFIX+"/ws";
+    }
+  }
+  if( process.env.BACKEND_PATH ){
+    //No trailing slash for the backend path
+    if( backend_path.substring(backend_path.length - 1) == "/") {
+      backend_path = backend_path.slice(0, backend_path.length-1);
+    }
   }
 
   if(components.length < 1){
@@ -42,17 +55,17 @@ var autoconfig  = function (config_overrides){
     }
     backend_component_url = process.env['COMPONENT_'+backend_component+'_HOST'] + ':' + process.env['COMPONENT_'+backend_component+'_PORT']
   }
-  var backend_host = process.env.BACKEND_SERVICE || backend_component_url;
 
   // Configure the BACKEND_SERVICE host address via environment variables,
   // OR, use `odo link backend` (where "backend" is the name of your backend component)
   // To select a specific component by name, set the "BACKEND_COMPONENT_NAME" env var:
+  var backend_host = process.env.BACKEND_SERVICE || backend_component_url;
   var config = multipaas(config_overrides).add({
     'no_slash_frontend': no_slash_frontend,
     'frontend_path': frontend_path,
     'path_info': "Frontend available at URL_PREFIX: "+frontend_path,
     'components': components,
-    'backend_component_name': process.env.BACKEND_COMPONENT_NAME,
+    'backend_component_name': backend_component_name,
     'backend_path': backend_path,
     'backend_component': backend_component,
     'backend_component_url': backend_component_url,
