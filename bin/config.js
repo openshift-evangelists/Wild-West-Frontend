@@ -1,29 +1,15 @@
 var multipaas   = require('config-multipaas');
+var autoconfig  = function (){
 
-// Autodetect Linked Components
-var findComponents = function(env){
-  if(!env){
-    env = process.env;
-  }
-  var component_list = []
-  var name = '';
-  for( var key in env ){
-    name = key.replace('COMPONENT_','').replace('_HOST','')
-    if(key.indexOf('COMPONENT_'+name+'_HOST') == 0 && env['COMPONENT_'+name+'_PORT']){
-      component_list.push(name);
-    }
-  }
-  return component_list;
-}
-
-var autoconfig  = function (config_overrides){
+  // Autodetect Linked Components
   var backend_component= undefined,
       backend_component_url= undefined,
       backend_component_name= process.env.BACKEND_COMPONENT_NAME,
       backend_path = process.env.BACKEND_PATH || "/ws",
       no_slash_frontend = undefined,
       frontend_path = process.env.URL_PREFIX || "/",
-      components = findComponents();
+      components = multipaas.components,
+      component  = multipaas.component
 
   //Normalize path inputs
   if( process.env.URL_PREFIX ){
@@ -45,7 +31,7 @@ var autoconfig  = function (config_overrides){
     }
   }
 
-  if(components.length < 1){
+  if( !components || components.length < 1){
     console.error("CONFIG ERROR: Can't find backend webservices component! \nUse `odo link` to link your front-end component to a backend component.")
   }else{
     if( process.env.hasOwnProperty('BACKEND_COMPONENT_NAME') && components.includes(backend_component_name.toUpperCase())){
@@ -53,14 +39,14 @@ var autoconfig  = function (config_overrides){
     }else{
       backend_component = components[0];
     }
-    backend_component_url = process.env['COMPONENT_'+backend_component+'_HOST'] + ':' + process.env['COMPONENT_'+backend_component+'_PORT']
+    backend_component_url = component[backend_component].host+':'+component[backend_component].port
   }
 
   // Configure the BACKEND_SERVICE host address via environment variables,
   // OR, use `odo link backend` (where "backend" is the name of your backend component)
   // To select a specific component by name, set the "BACKEND_COMPONENT_NAME" env var:
   var backend_host = process.env.BACKEND_SERVICE || backend_component_url;
-  var config = multipaas(config_overrides).add({
+  var config = multipaas().add({
     'no_slash_frontend': no_slash_frontend,
     'frontend_path': frontend_path,
     'path_info': "Frontend available at URL_PREFIX: "+frontend_path,
