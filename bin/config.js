@@ -1,3 +1,4 @@
+require('dotenv').config();
 var multipaas   = require('config-multipaas');
 var autoconfig  = function (){
 
