@@ -19,13 +19,13 @@
   "homepage": "https://github.com/openshift-evangelists/Wild-West-Frontend.git#readme",
   "dependencies": {
     "bootstrap": "^4.1.3",
-    "dotenv": "^6.1.0",
     "config-multipaas": "^0.2.3",
+    "dotenv": "^6.1.0",
+    "http-hash-router": "^1.1.0",
     "jquery": "^3.3.1",
     "phaser": "^2.6.2",
     "popper.js": "^1.14.4",
     "request": "^2.88.0",
-    "routes-router": "^4.3.0",
     "send-data": "^8.0.0",
     "st": "^1.2.2"
   }
