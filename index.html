@@ -10,24 +10,24 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>        
 	-->
-        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="assets/styles.css">
-        <script src="node_modules/jquery/dist/jquery.min.js"></script>
-        <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
-        <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="node_modules/phaser/build/phaser.min.js"></script>
+        <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/styles.css">
+        <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="/node_modules/popper.js/dist/umd/popper.min.js"></script>
+        <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="/node_modules/phaser/build/phaser.min.js"></script>
         <script>
           <!-- WARNING: NO EDITS HERE -->
           // BACKEND_PATH_CONFIG
           <!-- WARNING: NO EDITS HERE -->
         </script>
-        <script src="assets/game.js" type="text/javascript"></script>
+        <script src="/bin/game.js" type="text/javascript"></script>
     </head>
 
     <body>
         <header>
             <center>
-                <img src="assets/openshiftlogo.png" alt="OpenShift" align="center">
+                <img src="/assets/openshiftlogo.png" alt="OpenShift" align="center">
             </center>
         </header>
         <div style="background:#383838">
@@ -48,22 +48,19 @@
                         </section>
     
                         <section class="extra">
+                            <!--
                             <button class="accordion">Controls</button>
                             <div class="panel">
                                 <p>Use your mouse to aim the gun.</p>
                                 <p>Use the left mouse button to fire.</p>
                                 <p>Display Help: <input type="checkbox" id="myCheck" checked onclick="toggleHelpButton()"></p>
                             </div>
-        
+                            -->
                             <button class="accordion ">Game Objects</button>
                             <div class="panel">
-                                <p><img src="assets/build.png" alt="Build"> Build</p>
-                                <p><img src="assets/buildConfig.png" alt="Build Config"> Build Config</p>
-                                <p><img src="assets/deploy.png" alt="Deployment"> Deployment</p>
-                                <p><img src="assets/pod.png" alt="Pod"> Pod</p>
-                                <p><img src="assets/route.png" alt="Route"> Route</p>
-                                <p><img src="assets/service.png" alt="Service"> Service</p>
-                                <p><img src="assets/storage.png" alt="Storage"> Persistent Volume</p>
+                                <p><img src="/assets/pacman-blue.png" alt="Blue"> 10 points</p>
+                                <p><img src="/assets/pacman-red.png" alt="Red"> 20 points</p>
+                                <p><img src="/assets/pacman-pink.png" alt="Pink"> 50 points</p>
                             </div>
                         </section>
                     </nav>
@@ -102,7 +99,7 @@
                     });
                 }
         
-            </script>        
+            </script>
         </div>
     </body>
 </html>

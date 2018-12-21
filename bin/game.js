@@ -7,7 +7,7 @@
     var gunSight;
     var gunshot;
     var currObject;  // This is the sprite in the game representing the current OpenShift Object
-    var currOpenShiftObject;
+    var currGameObject;
     var emitter;
     var gameLoop;
     var index=0;
@@ -15,7 +15,7 @@
     var line='';
     var yeehaw;
     var explosion;
-    var gameID;
+    var gameId;  // This is the ID of the game.
     var objectText;
     var killFrameText;
     var scoreText;
@@ -26,7 +26,7 @@
         " ",
         "The OpenShift Evangelist Team presents",
         " ",
-        "OpenShift, the Wild Wild West way"
+        "A simple Wild Wild West game"
     ];
     var locations = [
         [341, 409],  // door 1
@@ -40,53 +40,69 @@
         [30, 530]    // cactus
     ];
     var backend_path = window.backend_path || '/ws';
-    var openshiftObjects = [
-        'SERVICE',
-        'POD',
-        'BUILD',
-        'DEPLOYMENT_CONFIG',
-        'BUILD_CONFIG',
-        'PVC',
-        'ROUTE'
-    ];
-
-    var killFrameHelp = {};
-    killFrameHelp['POD'] =  'You killed a\nPOD\n\nThis is okay because openshift\nwill recover gracefully.';
-    killFrameHelp['ROUTE'] = 'You killed a\nROUTE\n\nThis removes the URL and\nis not automatically\nrecovered';
-    killFrameHelp['SERVICE'] = 'You killed a\nSERVICE\n\n';
-    killFrameHelp['BUILD'] = 'You killed a\nBUILD\n\n';
-    killFrameHelp['DEPLOYMENT_CONFIG'] = 'You killed a\nDEPLOYMENT CONFIG\n\n';
-    killFrameHelp['BUILD_CONFIG'] = 'You killed a\nBUILD_CONFIG\n\n';
-    killFrameHelp['PVC'] = 'You killed a\nPERSISTENT VOLUME';
 
     // We need to create the game on the server
     $.ajax({
         url: backend_path+'/createGame',
         async: false,
+        type: 'GET',
+        // TODO: Provide the gameId
+//        data: { gameId: gameId },
         success: function(results) {
-            gameID = results.score.gameID;
-
-            // Now that we have a gameID from the server, we can start the game
+            console.log("Requested via ajax: " + backend_path+'/createGame');
+            gameId = results.score.gameId;
+            // Now that we have a gameId from the server, we can start the game
             game = new Phaser.Game(1151, 768, Phaser.AUTO, 'openshiftgame', { preload: preload, create: create, update: update, render: render });
         }
     });
 
     function preload() {
-
-        game.load.image('playfield', 'assets/gameplayfield.png');
-        game.load.image('gunsight', 'assets/gunsight.png');
-        game.load.audio('gunshot', 'assets/gunshot.wav');
-        game.load.image('SERVICE', 'assets/service.png');
-        game.load.image('POD', 'assets/pod.png');
-        game.load.image('BUILD', 'assets/build.png');
-        game.load.image('DEPLOYMENT_CONFIG', 'assets/deploy.png');
-        game.load.image('BUILD_CONFIG', 'assets/buildConfig.png');
-        game.load.image('PVC', 'assets/storage.png');
-        game.load.image('ROUTE', 'assets/route.png');
-        game.load.audio('yeehaw', 'assets/yeehaw.wav');
-        game.load.audio('explosion', 'assets/explosion.wav');
-        game.load.image('killframe', 'assets/frame.png');
+        game.load.image('playfield', '/assets/gameplayfield.png');
+        game.load.image('gunsight', '/assets/gunsight.png');
+        game.load.audio('gunshot', '/assets/gunshot.wav');
+        game.load.image('pacman-blue', '/assets/pacman-blue.png');
+        game.load.image('pacman-red', '/assets/pacman-red.png');
+        game.load.image('pacman-pink', '/assets/pacman-pink.png');
+        game.load.audio('yeehaw', '/assets/yeehaw.wav');
+        game.load.audio('explosion', '/assets/explosion.wav');
+        game.load.image('killframe', '/assets/frame.png');
     }
+
+    var clickHandler = function () {
+      gunshot.play();
+      // Check if the gunsight is over the currentObject
+      
+      if(checkOverlap(gunSight, currObject)) {
+          // Add the emitter for the explosion and play the yeehaw for target hit
+          explosion.play();
+          emitter = game.add.emitter(0, 0, 100);
+          // TODO: [JMP] Check that we're providing back the type
+          emitter.makeParticles(currObject.type);
+          emitter.gravity = 200;
+          //  Position the emitter where the mouse/touch event was
+          emitter.x = locations[currLocation][0];
+          emitter.y = locations[currLocation][1];
+          //  The first parameter sets the effect to "explode" which means all particles are emitted at once
+          //  The second gives each particle a 2000ms lifespan
+          //  The third is ignored when using burst/explode mode
+          //  The final parameter (10) is how many particles will be emitted in this single burst
+          emitter.start(true, 2000, null, 10);
+
+          // TODO: [JMP] Send score to the server
+          gameScore += currGameObject.value;
+
+          // delete the object on the game server
+          deleteObject(gameId, currGameObject);
+
+          currObject.destroy();
+          objectText.text="";
+      } else {
+          // The player missed the target and should be penalized with a deduction in score
+          // TODO: [JMP] Send score to the server
+          gameScore -= 30;
+      }
+      scoreText.text = "Score: ".concat(gameScore);
+    };
 
     function create() {
         // load the playfield background image
@@ -98,23 +114,15 @@
 
         introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
         scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-
         objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
 
-        //display the intro text
         displayIntroText();
 
-        // Load the gunshot audio
-        gunshot = game.add.audio('gunshot');
-        // Load the yeehaw
-        yeehaw = game.add.audio('yeehaw');
-        // Play the intro sound
-        yeehaw.play();
+        gunshot = game.add.audio('gunshot'); // Load the gunshot audio
+        yeehaw = game.add.audio('yeehaw'); // Load the gunshot yeehaw
+        yeehaw.play();  // Play the intro sound
+        explosion = game.add.audio('explosion'); // Set the explosion sound
 
-        // Set the explosion sound
-        explosion = game.add.audio('explosion');
-
-        
         // load the gun sights
         gunSight = game.add.sprite(game.world.centerX, game.world.centerY, 'gunsight');
         gunSight.anchor.set(0.5);
@@ -122,116 +130,84 @@
         gunSight.inputEnabled = true;
 
         // If the player fired their weapon
-        gunSight.events.onInputDown.add(function () {
-            gunshot.play();
-            // Check if the gunsight is over the currentObject
-            
-            if(checkOverlap(gunSight, currObject)) {
-                // delete the object on the game server
-                stopGameDisplayLoop();
-                deletePlatformObject(currOpenShiftObject);
-
-                // Add the emitter for the explosion and play the yeehaw for target hit
-                explosion.play();
-                emitter = game.add.emitter(0, 0, 100);
-                emitter.makeParticles(currOpenShiftObject.objectType);
-                emitter.gravity = 200;
-
-                //  Position the emitter where the mouse/touch event was
-                emitter.x = locations[currLocation][0];
-                emitter.y = locations[currLocation][1];
-
-                //  The first parameter sets the effect to "explode" which means all particles are emitted at once
-                //  The second gives each particle a 2000ms lifespan
-                //  The third is ignored when using burst/explode mode
-                //  The final parameter (10) is how many particles will be emitted in this single burst
-                emitter.start(true, 2000, null, 10);
-
-                currObject.destroy();
-
-                objectText.text="";
-                scoreText.text = "Score: ".concat(gameScore += 100);
-            } else {
-                // The player missed the target and should be penalized with a deduction in score
-                scoreText.text = "Score: ".concat(gameScore -= 50);
-            }
-        }, this);
-
-    }
-
-    function toggleHelpButton() {
-        if (noviceMode == false) {
-            noviceMode = true;
-        } else {
-            noviceMode = false;
-        }
-    }
-
-    function displayKillFrame() {
-        frameObject = game.add.sprite(220, 153, 'killframe');
-        frameObject.inputEnabled = true;
-
-        killFrameText = game.add.text(330, 270, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-        killFrameText.setText(killFrameHelp[currOpenShiftObject.objectType]);
-
-        frameObject.events.onInputDown.add(function() {
-            frameObject.destroy();
-            killFrameText.destroy();
-            startGameDisplayLoop();
-        }, this);
+        gunSight.events.onInputDown.add(clickHandler, this);
     }
 
     function displayObject() {
-
         // Get a random location from the location array as defined in the locations array
         currLocation = getRandomLocation(0, locations.length-1);
 
-        // Get a random object from the kubernetes or openshift API
-        getRandomOpenShiftObject();
+        // Get a random object from the backend
+        getRandomObject();
 
         // Add the object to the playfiend using the random location
-        currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currOpenShiftObject.objectType);
+        currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currObject.type);
 
         //delete the openshift object after it has been visible for 3 seconds.
         game.time.events.add(Phaser.Timer.SECOND * 2, function() {
-            currObject.destroy();
-            objectText.text = "";
+            // Only delete if currGameObject has not been properly shot
+            if (currGameObject != null){
+              currObject.destroy();
+              objectText.text = "";
+              // delete the object on the game server
+              deleteObject(gameId, currGameObject);
+            }
         });
         gunSight.bringToTop();
     }
 
-    
-    function getRandomOpenShiftObject() {
+    function displayGameOver() {
+      gunSight.events.onInputDown.removeAll();
+      stopGameDisplayLoop();
+
+      frameObject = game.add.sprite(220, 153, 'killframe');
+      frameObject.inputEnabled = true;
+
+      killFrameText = game.add.text(330, 270, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+      killFrameText.setText("GAME OVER!!! \nYour score is: " + gameScore);
+/*
+      frameObject.events.onInputDown.add(function() {
+          frameObject.destroy();
+          killFrameText.destroy();
+      }, this);
+*/
+    }
+  
+    function getRandomObject() {
         $.ajax({
             url: backend_path+'/getRandomObject',
             async: false,
+            type: 'GET',
+            data: { gameId: gameId },
             success: function(results) {
-                currOpenShiftObject = results;
-                objectText.text = "Type: " + results.objectType + "\nName: " + results.objectName + "\nID: " + results.objectID;
-
+              currObject = results;
+              currGameObject = results;
+              objectText.text = "Type: " + results.type + "\nName: " + results.name + "\nID: " + results.id;
+            },
+            error: function(jqXHR, textStatus, error) {
+                //TODO: GAME OVER
+                console.log("Error " + textStatus + " getting a random object: " + error);
+                displayGameOver();
             }
         });
     }
 
-    function deletePlatformObject() {
+    function deleteObject() {
         $.ajax({
             url: backend_path+'/deleteObject',
             async: false,
             type: 'GET',
-            data: { gameID: gameID, objectType : currOpenShiftObject.objectType, objectName : currOpenShiftObject.objectName, objectID : currOpenShiftObject.objectID },
+            data: { gameId: gameId, id : currGameObject.id },
             success: function() {
-                if(noviceMode == false) {
-                    startGameDisplayLoop();
-                } else {
-                    displayKillFrame(currOpenShiftObject);
-
-                }
+              console.log("Deleted object["+currGameObject.id+"] from gameId["+gameId);
             },
             error: function() {
-                startGameDisplayLoop();
+                console.log("Error deleting object["+currGameObject.id+"] from gameId["+gameId);
             }
         })
+        currGameObject = null;
     }
+
     function checkOverlap(spriteA, spriteB) {
         if(typeof spriteA != 'undefined' && typeof spriteB != 'undefined') {
             var boundsA = spriteA.getBounds();
@@ -247,7 +223,6 @@
     }
 
     function update() {
-
         //  If the gunsight is > 8px away from the pointer then let's move to it
         if (game.physics.arcade.distanceToPointer(gunSight, game.input.activePointer) > 8) {
             //  Make the object seek to the active pointer (mouse or touch).
@@ -260,7 +235,6 @@
     }
 
     function updateLine() {
-
         if (line.length < content[index].length)
         {
             line = content[index].substr(0, line.length + 1);
@@ -276,9 +250,7 @@
     }
 
     function displayIntroText() {
-
         index++;
-
         if (index < content.length)
         {
             line = '';

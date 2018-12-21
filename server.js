@@ -1,91 +1,62 @@
-var config         = require('./bin/config.js'),
-    fs             = require('fs'),
-    http           = require('http'),
-    HttpHashRouter = require('http-hash-router'),
-    st             = require('st'),
-    request        = require('request'),
-    sendJson       = require('send-data/json'),
-    sendHtml       = require('send-data/html'),
-    sendError      = require('send-data/error')
+'use strict';
 
-var router = HttpHashRouter();
+var config         = require('./bin/config.js'),
+    express        = require('express');
+var session = require('express-session');
+var Keycloak = require('keycloak-connect');
+
+// TODO: Find a proper way to disable complains on self sign certificates.
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
+var app = express();
+// For keycloak. See reference doc at https://www.keycloak.org/docs/latest/securing_apps/index.html#_nodejs_adapter
+var memoryStore = new session.MemoryStore();
+var keycloak = new Keycloak({store: memoryStore});
+//session
+app.use(session({
+  secret: 'thisShouldBeLongAndSecret',
+  resave: false,
+  saveUninitialized: true,
+  store: memoryStore
+}));
+
+app.use( keycloak.middleware());
 
 var backend_path = config.get('backend_path'),
-    frontend_path= config.get('frontend_path'),
     backend_host = config.get('backend_host');
 
-var backend_proxy = function (req, res, opts, cb) {
-  if(!backend_host){
-    console.error(config.get('backend_config_error'));
-    sendJson(req, res, config.get('backend_config_error'));
-  }else{
-    // Strip our Backend path prefix before proxying the request:
-    req.pipe(request('http://'+backend_host+req.url.substring(backend_path.length))).pipe(res);
-  }
-}
-var index_page = function (req, res, opts, cb) {
-  var index_html = fs.readFileSync(__dirname + '/index.html');
-  if(backend_path !== '/ws'){
-    index_html = index_html.toString().replace('// BACKEND_PATH_CONFIG', 'window.backend_path = \''+backend_path+'\';');
-  }
-  sendHtml(req, res, {
-    body: index_html,
-    statusCode: 200
-  })
-};
+var routes  = require('./routes/routes.js');
+var status  = require('./routes/status.js');
+var backend = require('./routes/backend.js');
 
-// Routes
-router.set(backend_path+'*', backend_proxy);
-router.set(frontend_path, index_page);
-
-// Ensure that we return *something* on the default path
-if( frontend_path !== '/'){
-  router.set('/', function (req, res, opts, cb) {
-    sendHtml(req, res, {
-      body: config.get('path_info'),
-      statusCode: 200
-    })
-  });
-  // append trailing slash - ensure a valid relative path for static assets
-  router.set(config.get('no_slash_frontend'), function (req, res, opts, cb) {
-    res.statusCode=302;
-    res.setHeader('Location', frontend_path );
-    res.end();
-  });
-}
-
-// Serve static assets from our static_content folders
-var static_content=['assets','node_modules'];
-for(var folder in static_content){
-  router.set(frontend_path+static_content[folder]+"/*", st({
-    path: static_content[folder], url: frontend_path+static_content[folder]
-  }));
-}
-
-// TODO: these two functions are just for testing, can be deleted:
-router.set(frontend_path+'status', function (req, res, opts, cb) {
-  sendJson(req, res, {'status': 'ok'})
+//Simple request time logger
+app.use(function(req, res, next){
+  console.log("Requested: " + req.path);
+  next();
 });
 
-router.set(frontend_path+'hostname', function (req, res, opts, cb) {
-  var data = '<p>Hostname: ' + config.get('HOSTNAME') + '</p>';
-  sendHtml(req, res, {
-    body: data,
-    statusCode: 200
-  })
+function logToken(token, request) {
+//  console.log("Request to " + request.url + " with token " + JSON.stringify(token));
+  console.log("Request to " + request.url);
+  return true;
+}
+
+// Static files
+app.use('/assets', express.static('assets'));
+app.use('/node_modules', express.static('node_modules'));
+app.use('/bin', express.static('bin'));
+// Status page
+app.use('/status', status);
+// Application
+app.use('/', keycloak.protect(logToken), routes);
+app.use(backend_path, backend);
+// Anything else
+app.get('*', function(req, res){
+  res.send('Sorry, this URL is not defined');
 });
 
-// Listen
-var server = http.createServer(function handler(req, res) {
-  router(req, res, {}, onError);
-  function onError(err) {
-    if (err) {
-      res.statusCode = err.statusCode || 500;
-      res.end(err.message);
-    }
-  }
-});
-server.listen(config.get('PORT'), config.get('IP'), function () {
+
+app.listen(config.get('PORT'), config.get('IP'), function () {
   console.log( 'Listening on ' + config.get('IP') + ', port ' + config.get('PORT') )
   console.log( config.get('path_info') );
   if( !backend_host ){
@@ -94,4 +65,3 @@ server.listen(config.get('PORT'), config.get('IP'), function () {
     console.log(config.get('backend_config_info'));
   }
 });
-
