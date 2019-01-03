@@ -15,13 +15,7 @@
     var line='';
     var yeehaw;
     var explosion;
-    var gameId;  // This is the ID of the game.
-    var objectText;
-    var killFrameText;
-    var scoreText;
-    var introText;
-    var gameScore = 0;
-    var noviceMode = true;
+    var objectText, killFrameText, scoreText, introText;
     var content = [
         " ",
         "The OpenShift Evangelist Team presents",
@@ -40,6 +34,11 @@
         [30, 530]    // cactus
     ];
     var backend_path = window.backend_path || '/ws';
+    var currentGame = {
+      username: 'Jorge', // TODO: Get username from real place
+      id: '', 
+      score: 0
+    }
 
     // We need to create the game on the server
     $.ajax({
@@ -47,22 +46,25 @@
         async: false,
         type: 'GET',
         // TODO: Provide the gameId
-//        data: { gameId: gameId },
+//        data: { gameId: currentGame.gameId },
         success: function(results) {
             console.log("Requested via ajax: " + backend_path+'/createGame');
-            gameId = results.score.gameId;
+            currentGame.gameId = results.score.gameId;
             // Now that we have a gameId from the server, we can start the game
             game = new Phaser.Game(1151, 768, Phaser.AUTO, 'openshiftgame', { preload: preload, create: create, update: update, render: render });
         }
     });
 
+    var theme = "beer";
+
     function preload() {
         game.load.image('playfield', '/assets/gameplayfield.png');
         game.load.image('gunsight', '/assets/gunsight.png');
         game.load.audio('gunshot', '/assets/gunshot.wav');
-        game.load.image('pacman-blue', '/assets/pacman-blue.png');
-        game.load.image('pacman-red', '/assets/pacman-red.png');
-        game.load.image('pacman-pink', '/assets/pacman-pink.png');
+        game.load.image('item1', '/assets/' + theme + '/item1.png');
+        game.load.image('item2', '/assets/' + theme + '/item2.png');
+        game.load.image('item3', '/assets/' + theme + '/item3.png');
+        game.load.image('item4', '/assets/' + theme + '/item4.png');
         game.load.audio('yeehaw', '/assets/yeehaw.wav');
         game.load.audio('explosion', '/assets/explosion.wav');
         game.load.image('killframe', '/assets/frame.png');
@@ -89,20 +91,24 @@
           emitter.start(true, 2000, null, 10);
 
           // TODO: [JMP] Send score to the server
-          gameScore += currGameObject.value;
+          currentGame.score += currGameObject.value;
 
           // delete the object on the game server
-          deleteObject(gameId, currGameObject);
+          deleteObject(currentGame.gameId, currGameObject);
 
           currObject.destroy();
           objectText.text="";
       } else {
           // The player missed the target and should be penalized with a deduction in score
           // TODO: [JMP] Send score to the server
-          gameScore -= 30;
+          currentGame.score -= 30;
       }
-      scoreText.text = "Score: ".concat(gameScore);
+      displayScore(currentGame.username, currentGame.score);
     };
+
+    function displayScore(user, score) {
+      scoreText.text = "User: " + user + "\nScore: " + score;
+    }
 
     function create() {
         // load the playfield background image
@@ -113,7 +119,7 @@
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         introText = game.add.text(32, 660, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-        scoreText = game.add.text(765, 10, 'Score: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
+        scoreText = game.add.text(765, 10, 'User: ' + currentGame.username + '\nScore: 000', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
         objectText = game.add.text(32, 670, '', { font: "16pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
 
         displayIntroText();
@@ -150,7 +156,7 @@
               currObject.destroy();
               objectText.text = "";
               // delete the object on the game server
-              deleteObject(gameId, currGameObject);
+              deleteObject(currentGame.gameId, currGameObject);
             }
         });
         gunSight.bringToTop();
@@ -164,7 +170,7 @@
       frameObject.inputEnabled = true;
 
       killFrameText = game.add.text(330, 270, '', { font: "26pt Courier", fill: "#000000", stroke: "#000000", strokeThickness: 2 });
-      killFrameText.setText("GAME OVER!!! \nYour score is: " + gameScore);
+      killFrameText.setText("GAME OVER!!! \nYour score is: " + currentGame.score);
 /*
       frameObject.events.onInputDown.add(function() {
           frameObject.destroy();
@@ -178,7 +184,7 @@
             url: backend_path+'/getRandomObject',
             async: false,
             type: 'GET',
-            data: { gameId: gameId },
+            data: { gameId: currentGame.gameId },
             success: function(results) {
               currObject = results;
               currGameObject = results;
@@ -197,12 +203,12 @@
             url: backend_path+'/deleteObject',
             async: false,
             type: 'GET',
-            data: { gameId: gameId, id : currGameObject.id },
+            data: { gameId: currentGame.gameId, id : currGameObject.id },
             success: function() {
-              console.log("Deleted object["+currGameObject.id+"] from gameId["+gameId);
+              console.log("Deleted object["+currGameObject.id+"] from gameId["+currentGame.gameId);
             },
             error: function() {
-                console.log("Error deleting object["+currGameObject.id+"] from gameId["+gameId);
+                console.log("Error deleting object["+currGameObject.id+"] from gameId["+currentGame.gameId);
             }
         })
         currGameObject = null;

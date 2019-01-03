@@ -1,6 +1,6 @@
 {
   "realm": "wwgamerealm",
-  "auth-server-url": "https://sso-odo-demo.apps.osevg-e7f6.openshiftworkshop.com/auth",
+  "auth-server-url": "https://sso-odo-demo.apps.osevg-45b3.openshiftworkshop.com/auth",
   "ssl-required": "external",
   "resource": "wwgame",
   "public-client": true,
