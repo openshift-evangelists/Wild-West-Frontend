@@ -79,7 +79,7 @@
           explosion.play();
           emitter = game.add.emitter(0, 0, 100);
           // TODO: [JMP] Check that we're providing back the type
-          emitter.makeParticles(currObject.type);
+          emitter.makeParticles(currGameObject.type.name);
           emitter.gravity = 200;
           //  Position the emitter where the mouse/touch event was
           emitter.x = locations[currLocation][0];
