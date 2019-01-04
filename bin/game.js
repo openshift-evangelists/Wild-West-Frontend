@@ -46,10 +46,10 @@
         async: false,
         type: 'GET',
         // TODO: Provide the gameId
-//        data: { gameId: currentGame.gameId },
+//        data: { gameId: currentGame.id },
         success: function(results) {
             console.log("Requested via ajax: " + backend_path+'/createGame');
-            currentGame.gameId = results.score.gameId;
+            currentGame.id = results.id;
             // Now that we have a gameId from the server, we can start the game
             game = new Phaser.Game(1151, 768, Phaser.AUTO, 'openshiftgame', { preload: preload, create: create, update: update, render: render });
         }
@@ -91,10 +91,10 @@
           emitter.start(true, 2000, null, 10);
 
           // TODO: [JMP] Send score to the server
-          currentGame.score += currGameObject.value;
+          currentGame.score += currGameObject.type.value;
 
           // delete the object on the game server
-          deleteObject(currentGame.gameId, currGameObject);
+          deleteObject(currentGame.id, currGameObject);
 
           currObject.destroy();
           objectText.text="";
@@ -147,7 +147,7 @@
         getRandomObject();
 
         // Add the object to the playfiend using the random location
-        currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currObject.type);
+        currObject = game.add.sprite(locations[currLocation][0], locations[currLocation][1], currObject.type.name);
 
         //delete the openshift object after it has been visible for 3 seconds.
         game.time.events.add(Phaser.Timer.SECOND * 2, function() {
@@ -184,11 +184,11 @@
             url: backend_path+'/getRandomObject',
             async: false,
             type: 'GET',
-            data: { gameId: currentGame.gameId },
+            data: { gameId: currentGame.id },
             success: function(results) {
               currObject = results;
               currGameObject = results;
-              objectText.text = "Type: " + results.type + "\nName: " + results.name + "\nID: " + results.id;
+              objectText.text = "ID: " + results.id + "\nType: " + results.type.name + "\nScore: " + results.type.value;
             },
             error: function(jqXHR, textStatus, error) {
                 //TODO: GAME OVER
@@ -203,12 +203,12 @@
             url: backend_path+'/deleteObject',
             async: false,
             type: 'GET',
-            data: { gameId: currentGame.gameId, id : currGameObject.id },
+            data: { gameId: currentGame.id, id : currGameObject.id },
             success: function() {
-              console.log("Deleted object["+currGameObject.id+"] from gameId["+currentGame.gameId);
+              console.log("Deleted object["+currGameObject.id+"] from gameId["+currentGame.id);
             },
             error: function() {
-                console.log("Error deleting object["+currGameObject.id+"] from gameId["+currentGame.gameId);
+                console.log("Error deleting object["+currGameObject.id+"] from gameId["+currentGame.id);
             }
         })
         currGameObject = null;
