@@ -3,12 +3,12 @@
     <head>
         <meta charset=utf-8>
         <title>OpenShift, Wild Wild West</title>
-        
+
 	<!-- TODO: if (process.env.NODE_ENV == "production"){ //then use a CDN?
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> 
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>        
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
 	-->
         <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="assets/styles.css">
@@ -37,16 +37,16 @@
                     <nav>
                         <div class="heading">
                             <h1>Wild West</h1>
-                            <h2>Shoot 'Em Up!</h2>
+                            <h2>The OpenShift Way!</h2>
                         </div>
                         <section class="info">
                             <div class="description">
                                 <h3>Description</h3>
                                 <p><strong>The goal of the game is to shoot Kubernetes platform objects!</strong></p>
                                 <p>Be careful though, if destructive mode is on, you could destroy your game.</p>
-                            </div>       
+                            </div>
                         </section>
-    
+
                         <section class="extra">
                             <button class="accordion">Controls</button>
                             <div class="panel">
@@ -54,7 +54,7 @@
                                 <p>Use the left mouse button to fire.</p>
                                 <p>Display Help: <input type="checkbox" id="myCheck" checked onclick="toggleHelpButton()"></p>
                             </div>
-        
+
                             <button class="accordion ">Game Objects</button>
                             <div class="panel">
                                 <p><img src="assets/build.png" alt="Build"> Build</p>
@@ -73,8 +73,8 @@
                         <article>
                                 <div id="openshiftgame"></div>
                         </article>
-                    </div>                    
-                </div>       
+                    </div>
+                </div>
         </div>
         </div>
             <footer>
@@ -83,13 +83,13 @@
                    <div> Back to Openshift </div>
                 </div>
             </footer>
-            
+
             <script>
                 // Accordion Menu
                 var acc = document.getElementsByClassName("accordion");
                 var stripes1 = document.querySelector("#stripes1");
                 var i;
-        
+
                 for (i = 0; i < acc.length; i++) {
                     acc[i].addEventListener("click", function() {
                         this.classList.toggle("active");
@@ -101,8 +101,8 @@
                         }
                     });
                 }
-        
-            </script>        
+
+            </script>
         </div>
     </body>
 </html>
