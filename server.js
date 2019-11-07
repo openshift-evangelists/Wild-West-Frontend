@@ -33,10 +33,13 @@ var index_page = function (req, res, opts, cb) {
     statusCode: 200
   })
 };
+var ico = fs.readFileSync(__dirname + '/favicon.ico');
+var favicon = function (req, res, opts, cb) { res.end(ico); };
 
 // Routes
-router.set(backend_path+'*', backend_proxy);
+router.set('/favicon.ico', favicon);
 router.set(frontend_path, index_page);
+router.set(backend_path+'*', backend_proxy);
 
 // Ensure that we return *something* on the default path
 if( frontend_path !== '/'){
