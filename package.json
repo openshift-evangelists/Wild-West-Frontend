@@ -22,7 +22,7 @@
     "config-multipaas": "^0.2.3",
     "har-validator": "^5.1.3",
     "http-hash-router": "^1.1.0",
-    "jquery": "^3.4.0",
+    "jquery": "^3.5.0",
     "phaser": "^2.6.2",
     "popper.js": "^1.14.4",
     "request": "^2.88.0",
