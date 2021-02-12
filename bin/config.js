@@ -32,7 +32,7 @@ var autoconfig  = function (){
   }
 
   if( !components || components.length < 1){
-    console.error("CONFIG ERROR: Can't find backend webservices component! \nUse `odo link` to link your front-end component to a backend component.")
+    console.error("CONFIG ERROR: backend component config not found: COMPONENT_BACKEND_HOST, COMPONENT_BACKEND_PORT")
   }else{
     if( process.env.hasOwnProperty('BACKEND_COMPONENT_NAME') && components.includes(backend_component_name.toUpperCase())){
       backend_component = backend_component_name.toUpperCase();
@@ -42,8 +42,7 @@ var autoconfig  = function (){
     backend_component_url = component[backend_component].host+':'+component[backend_component].port
   }
 
-  // Configure the BACKEND_SERVICE host address via environment variables,
-  // OR, use `odo link backend` (where "backend" is the name of your backend component)
+  // Configure the BACKEND_SERVICE host address via environment variables
   // To select a specific component by name, set the "BACKEND_COMPONENT_NAME" env var:
   var backend_host = process.env.BACKEND_SERVICE || backend_component_url;
   var config = multipaas().add({
