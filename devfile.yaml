@@ -1,0 +1,49 @@
+commands:
+- exec:
+    commandLine: npm install
+    component: runtime
+    group:
+      isDefault: true
+      kind: build
+    workingDir: /project
+  id: install
+- exec:
+    commandLine: npm start
+    component: runtime
+    group:
+      isDefault: true
+      kind: run
+    workingDir: /project
+  id: run
+- exec:
+    commandLine: npm run debug
+    component: runtime
+    group:
+      isDefault: true
+      kind: debug
+    workingDir: /project
+  id: debug
+- exec:
+    commandLine: npm test
+    component: runtime
+    group:
+      isDefault: true
+      kind: test
+    workingDir: /project
+  id: test
+components:
+- container:
+    image: registry.access.redhat.com/ubi8/nodejs-14:latest
+    memoryLimit: 1024Mi
+    mountSources: true
+    sourceMapping: /project
+  name: runtime
+metadata:
+  name: nodejs
+  version: 2.0.0
+schemaVersion: 2.0.0
+starterProjects:
+- git:
+    remotes:
+      origin: https://github.com/openshift-evangelists/Wild-West-Frontend.git
+  name: ww-frontend
